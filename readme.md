@@ -11,7 +11,7 @@ from -> number (Only if the type is "countdown").
 
 ```
 
-#Example
+# Example
 ```
 import Chronos from './path/Chronos.js';
 
