@@ -19,7 +19,8 @@ export default class Chronos extends Component {
         this.wait = 1000;
         this.interval = null;
 
-        this.DEFAULT_OFFSET_MINUTES = "0.2";
+        this.DEFAULT_OFFSET_MINUTES = "0.0:0.2:0.0";
+        this.DEFAULT_OFFSET_MINUTES_TIMER = "0.0:0.0:0.0";
 
         this.state = {
             seconds: "0.0",
@@ -34,18 +35,49 @@ export default class Chronos extends Component {
         if (type) {
             switch (type) {
                 case "countdown": {
-                    // In minutes
                     if (!from) {
                         this.from = this.DEFAULT_OFFSET_MINUTES;
                         this.setState({"from": this.DEFAULT_OFFSET_MINUTES});
                     }
+                    else this.from = from;
                     this.offset = -this.offset;
-                    this.minutes = this.from;
+                    try {
+                        const separator = this.from.split(":");
+
+                        this.seconds = separator[2];
+                        this.minutes = separator[1];
+                        this.hours = separator[0];
+
+                    } catch (e) {
+                        console.error(e);
+                        return;
+                    }
+                    this.setState({"seconds": this.seconds});
                     this.setState({"minutes": this.minutes});
+                    this.setState({"hours": this.hours});
                     this.startCountdown();
                     break;
                 }
                 case "timer": {
+                    if (!from) {
+                        this.from = this.DEFAULT_OFFSET_MINUTES_TIMER;
+                        this.setState({"from": this.DEFAULT_OFFSET_MINUTES_TIMER});
+                    }
+                    else this.from = from;
+                    try {
+                        const separator = this.from.split(":");
+
+                        this.seconds = separator[2];
+                        this.minutes = separator[1];
+                        this.hours = separator[0];
+
+                    } catch (e) {
+                        console.error(e);
+                        return;
+                    }
+                    this.setState({"seconds": this.seconds});
+                    this.setState({"minutes": this.minutes});
+                    this.setState({"hours": this.hours});
                     this.startTimer();
                     break;
                 }
@@ -53,7 +85,11 @@ export default class Chronos extends Component {
         }
     }
 
+
     componentWillUnmount() {
+        if (this.props.customFunction) {
+            this.props.customFunction({hours: this.state.hours, minutes: this.state.minutes, seconds: this.state.seconds});
+        }
         clearInterval(this.interval);
     }
 
@@ -127,7 +163,6 @@ export default class Chronos extends Component {
     }
 
     formatFloat(num) {
-        console.log('entrou', num)
         num = Number(num) + this.offset;
         if (num % Math.abs(0.1) === 0) num = num.toString().concat("0");
         return Number(num).toFixed(1);
